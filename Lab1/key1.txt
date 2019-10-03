@@ -23,3 +23,18 @@
 4. M-< C-M-s [ ^ [ : a s c i i : ] ] Ret C-a M-z >
 5. C-s < / o Ret C-e C-o
 
+1.4
+1. cat exer2.html exer2.diff > exer4.html
+2. emacs exer4.html
+3. M-> C-r < C-SP C-e M-w C-r < / h t C-r C-n C-y
+4. M-> C-r < ! C-r C-SP M-e C-n C-n M-w C-r n o t h C-r C-n C-y
+   M-> C-r < ! C-r C-r C-SP C-s > M-w C-r n o t h C-r M-f C-y
+   M-> C-r < ! C-r C-r C-r C-SP M-e C-n M-w C-r S u b C-r C-r C-n C-n C-y
+   M-> C-r D C-a C-f C-SP C-e M-w C-r L e a C-r C-n C-n C-y
+   M-> C-r U N C-a C-f C-SP C-e M-w C-r L a C-r C-n C-n C-y
+5. C-s @ @ C-a C-p C-p C-SP M-> C-w
+6. C-_
+7. C-SP C-r 2 . C-a C-p M-x comment-region
+8. M-< M-x count-matches Ret < o l >
+   7 occurences found
+   M-% < o l > Ret < o L > Ret !
