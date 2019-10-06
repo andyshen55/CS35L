@@ -1,0 +1,28 @@
+1. man -k (search_str)
+
+   Shell commands: man man
+   
+2. mv: /usr/local/cs/bin/mv
+   sh: /usr/bin/sh
+
+   Shell commands: which mv, which sh
+
+3. pr: converts text files for printing
+   ar: create, modify, and extract from archives
+   tr: translate or delete characters
+
+   Shell commands: man find, find /usr/bin -name '?r'
+   man pr, man ar, man tr
+
+4. /usr/local/cs/emacs-26.3/bin/emacs-26.3
+
+   Shell commands: which emacs, cd /usr/local/cs/bin, ls -l emacs
+
+5. /usr/bin/gcc: 4.8.5
+   gcc: 9.2.0
+   
+   Shell commands: gcc --version, /usr/bin/gcc --version
+
+   They are different programs because the gcc version stored in /usr/bin/gcc has not been updated, whereas the default gcc has.
+
+6. 

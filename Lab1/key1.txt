@@ -38,3 +38,33 @@
 8. M-< M-x count-matches Ret < o l >
    7 occurences found
    M-% < o l > Ret < o L > Ret !
+
+1.5
+1. emacs
+   M-x make-directory Ret junk Ret
+2. C-x C-f junk/hello.c Ret
+   (copied hello.c source code)
+3. M-x compile Ret C-u 0 C-k gcc ju Tab Tab Ret
+4. M-! . / a Tab Ret C-x b S h Tab Ret C-SP C-a M-x append-to-buffer Ret hello-out Ret
+5. C-x C-f key1.txt Ret
+   M-x insert-buffer Ret hello-out Ret
+   EOF on input
+
+1.6
+1. emacs
+   C-x b s c Tab Ret
+2. (random "705-172-144") C-j
+   My output: -1201139683212274256
+3. (setq x (random)) C-j
+   (setq y (random)) C-j
+4. (* x y) C-j
+   The result I got was incorrect.
+   x: -281099375740028067
+   y: 373966099054933102
+   x * y: 405232499007481334
+   I suspect the error was due to an overflow.
+5. M-: (* x y) Ret
+   The output was the same, except that it was in displayed in the minibuffer, along with two other values:
+   (#o26375314762262162766, #x59faccf92c8e5f6)
+6. No, the two numbers are not truly random, as a deterministic computer is not capable of generating true random numbers. Emacs uses seed values initialized at startup to generate pseudo-random numbers, along with other deterministic factors such as time, memory etc.
+7. 
