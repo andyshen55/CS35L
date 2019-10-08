@@ -14,9 +14,9 @@
    Shell commands: man find, find /usr/bin -name '?r'
    man pr, man ar, man tr
 
-4. /usr/local/cs/emacs-26.3/bin/emacs-26.3
+4. /etc/alternatives/emacs
 
-   Shell commands: which emacs, cd /usr/local/cs/bin, ls -l emacs
+   Shell commands: cd /usr/bin, ls -l emacs
 
 5. gcc: 9.2.0
    /usr/bin/gcc: 4.8.5
@@ -215,7 +215,7 @@
 
    Shell commands: man ls, ls -t | head -n 1
 
-10. The locale command gets its data from /usr/lib/locale/locale-archive as the default archive, and from /usr/share/i18n/locales for locale definition files
+10. The locale command gets its data from the LC_* environment variables. The default archive location is /usr/lib/locale/locale-archive, and /usr/share/i18n/locales is the default location of locale definition files
 
     Shell commands: man locale
 
@@ -225,7 +225,13 @@
 
     Shell commands: emacs, C-h a Ret downcase Ret
 
-12.
+12. C-M-r: isearch-backward-regexp, searches incrementally backward for regex
+    C-M-s: isearch-forward-regexp, searches incrementally forward for regex
+    C-M-t: transpose-sexps, transposes two sexps
+    C-M-u: backward-up-list, moves backward out of one level of parantheses
+    C-M-v: scroll-other-window, scrolls next window upward
+
+    Shell commands: emacs, C-h k [C-M-r, C-M-s, C-M-t, C-M-u, C-M-v]
 
 13. C-g acts as a keyboard interrupt. More specifically, C-g runs the command keyboard-quit, which signals a quit condition.
 
