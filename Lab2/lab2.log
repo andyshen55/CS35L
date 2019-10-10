@@ -1,0 +1,28 @@
+I set up the lab environment with the following shell commands:
+locale
+export LC_ALL='C'
+sort /usr/share/dict/words > words
+wget https://web.cs.ucla.edu/classes/fall19/cs35L/assign/assign2.html
+
+
+
+I then ran the prescribed shell commands.
+
+cat assign2.html | tr -c 'A-Za-z' '[\n*]': This command outputs the HTML file with all non-alphabetical characters replaced with newlines.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]': The output of this command differed from the previous one in that it squeezed all consecutive newlines into a single newline. This made the output vastly more readable.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort: The output of this command was the alphabetically sorted version of the previous command.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u: The output of this command was the same as the previous command, except with non-unique instances of words removed.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words: The output of this command compares the sorted output of the previous command (sorted-assign)  against the alphabetically sorted list of words in words. It splits the output into three columns: the first displays lines unique to sorted-assign, the second displays lines unique to words, and the third displays lines found in both.
+
+cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words: The output of this command is the same as that of the previous command, except with columns 2 and 3 not being displayed. In other words, this command displays all the lines that are unique to sorted-assign.
+
+
+
+After running the shell commands, I had to extract a list of Hawaiian words from the given website.
+I ran the command: wget -O hawaiian.html https://www.mauimapp.com/moolelo/hwnwdshw.htm
+to get a local copy of the HTML file from the prescribed website.
+
