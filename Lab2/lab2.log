@@ -26,3 +26,42 @@ After running the shell commands, I had to extract a list of Hawaiian words from
 I ran the command: wget -O hawaiian.html https://www.mauimapp.com/moolelo/hwnwdshw.htm
 to get a local copy of the HTML file from the prescribed website.
 
+In order to automate the systematic ruleset prescribed in the assignment specification, I wrote a shell script buildwords.sh
+
+In pseudocode, buildwords.sh matches all lines with enclosing <td> tags, as all the  Hawaiian words are contained within these tags. It then removes all '?', '<ul>', '</ul>' occurences as prescribed by the spec. I then removed the enclosing <td> tags and replaced grave accents with apostrophes. buildwords.sh then separates phrases into individual words and filters out any words that contain letters that aren't present in the Hawaiian alphabet. The remaining words are then sorted alphabetically and pruend for repeat occurences.
+
+emacs buildwords.sh
+
+#! /bin/bash
+
+:' Usage: ./buildwords < input_file(s)
+Automates systematic rules to extract Hawaiian words from given URL
+'
+
+#Matches lines enclosed in <td> tags
+grep -E "<td>.*</td>" $@ |
+
+#Removes tags and ? char
+sed 's/(\? | <ul> | <\/ul>)//g' |
+sed 's/<td>//g' |
+sed "s/<\/td>//g" |
+
+#Replaces ASCII grave accents with apostrophes
+sed "s/\`/\'/g" |
+
+#separates phrases into individual words (on separate lines)
+tr ',' '\n' |
+tr ' ' '\n' |
+
+#truncates extraneous newlines
+tr -s '\n' |
+
+#converts to lowercase
+tr [:upper:] [:lower:] |
+
+#deletes lines containing non-Hawaiian alphabetical characters
+sed "/[^pk\'mnwlhaeiou\n ]/d" |
+
+#filters unique words alphabetically
+sort -u
+
