@@ -34,10 +34,6 @@ emacs buildwords.sh
 
 #! /bin/bash
 
-:' Usage: ./buildwords < input_file(s)
-Automates systematic rules to extract Hawaiian words from given URL
-'
-
 #Matches lines enclosed in <td> tags
 grep -E "<td>.*</td>" $@ |
 
@@ -65,3 +61,26 @@ sed "/[^pk\'mnwlhaeiou\n ]/d" |
 #filters unique words alphabetically
 sort -u
 
+
+
+After writing the shell script, I ran the command:
+./buildwords.sh < hawaiian.html | less > hwords
+
+With my newly created Hawaiian dictionary, I ran a HAWAIIANCHECKER command on assign2.html (which I had previously downloaded with wget). The output of the following command was the number of misspelled words: 206.
+tr [:upper:] [:lower:] < assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | wc -w
+
+I then ran the same command on hwords, with the expected output being 0. (As there shouldn't be any difference between the two input files in terms of valid words) The following command output 0:
+tr [:upper:] [:lower:] < hwords | tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | wc -w
+
+I then ran the given ENGLISHCHECKER on assign2.html. The output of the following command (the number of misspelled words according to our English dictionary) was 43:
+tr [:upper:] [:lower:] < assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words | wc -w
+
+
+
+Examples of words that are misspelled as English but not Hawaiian:
+wiki
+okina
+
+Examples of words that are misspelled as Hawaiian but not English:
+when
+main
