@@ -32,13 +32,17 @@ In pseudocode, buildwords.sh matches all lines with enclosing <td> tags, as all 
 
 emacs buildwords.sh
 
+
+
 #! /bin/bash
 
 #Matches lines enclosed in <td> tags
 grep -E "<td>.*</td>" $@ |
 
 #Removes tags and ? char
-sed 's/(\? | <ul> | <\/ul>)//g' |
+sed 's/?//g' |
+sed 's/<u>//g' |
+sed 's/<\/u>//g' | 
 sed 's/<td>//g' |
 sed "s/<\/td>//g" |
 
@@ -56,7 +60,7 @@ tr -s '\n' |
 tr [:upper:] [:lower:] |
 
 #deletes lines containing non-Hawaiian alphabetical characters
-sed "/[^pk\'mnwlhaeiou\n ]/d" |
+sed "/[^pk\'mnwlhaeiou]/d" |
 
 #filters unique words alphabetically
 sort -u
@@ -66,7 +70,7 @@ sort -u
 After writing the shell script, I ran the command:
 ./buildwords.sh < hawaiian.html | less > hwords
 
-With my newly created Hawaiian dictionary, I ran a HAWAIIANCHECKER command on assign2.html (which I had previously downloaded with wget). The output of the following command was the number of misspelled words: 206.
+With my newly created Hawaiian dictionary, I ran a HAWAIIANCHECKER command on assign2.html (which I had previously downloaded with wget). The output of the following command was the number of misspelled words: 202.
 tr [:upper:] [:lower:] < assign2.html | tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | wc -w
 
 I then ran the same command on hwords, with the expected output being 0. (As there shouldn't be any difference between the two input files in terms of valid words) The following command output 0:
