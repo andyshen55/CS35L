@@ -1,7 +1,7 @@
 #! /bin/bash
-
 #Basic poornames implementation
-DOMAIN="."
+
+DOMAIN=$PWD
 ARGS=$#
 
 #argument error handling
@@ -27,9 +27,17 @@ then
     exit 1
 fi
 
-#local files=`find "$DOMAIN" -mindepth 1 -maxdepth 1 -type f -exec basename {} \;`
+#all files returned by non-recursive find command in current directory
+files=`find "$DOMAIN" -mindepth 1 -maxdepth 1 -exec basename {} \;`
 
-files=`find "$DOMAIN" -mindepth 1 -maxdepth 1 -type f -exec basename {} \;`
+#invalid filenames in violation of rules 1-4
 invalidNames=`echo "$files" | grep -E "^\.[a-zA-z_-]|^\.{2}[a-zA-z_-]|[^a-zA-Z\._-]|^-|[a-zA-Z\._-]{14,}"`
+
+#invalid filenames in violation of rule 5 (case insensitivity)
 caseDuplicates=`echo "$files" | sort -f | uniq -iD`
-#validPreCaseCheck=`echo "$files" | grep -Ev "^\.[a-zA-z_-]|^\.{2}[a-zA-z_-]|[^a-zA-Z\._-]|^-|[a-zA-Z\._-]{14,}"`
+
+#combines violators of rules 1-4 and 5, and then removes repeat offenders
+for item in `{ echo "$invalidNames"; echo "$caseDuplicates"; } | sort -u`;
+do
+    echo $DOMAIN/$item
+done

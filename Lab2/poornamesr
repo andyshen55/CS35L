@@ -1,0 +1,92 @@
+#! /bin/bash
+#Recursive  poornames implementation
+
+DOMAIN=$PWD
+ARGS=$#
+RECURSE=false
+
+#argument error handling
+if (($ARGS > 2))
+then
+    echo "Error: Too many arguments provided." >&2
+    exit 1
+fi
+
+if (($ARGS == 2))
+then
+    if [ "${1:0:2}" != "-r" ]
+    then
+	echo "Error: -r command must precede directory." >&2
+	exit 1
+    fi
+
+    if [ "${2:0:1}" == "-" ]
+    then
+	echo "Error: At most one option-argument can be given." >&2
+	exit 1
+    fi
+
+    RECURSE=true
+    DOMAIN=$2
+fi
+
+if (($ARGS == 1))
+then
+    if [ "${1:0:2}" == "-r" ]
+    then
+	RECURSE=true
+    else
+	DOMAIN=$1
+    fi
+fi
+
+if [ !  -d "${DOMAIN}" ]
+then
+    echo "Error: argument is not the name of a directory." >&2
+    exit 1
+fi
+
+#basic poorname search function
+nonRecursivePN()
+{
+    local DIR=$1
+    
+    #all files returned by non-recursive find command in current directory
+    files=`find "$DIR" -mindepth 1 -maxdepth 1 -exec basename {} \;`
+
+    #invalid filenames in violation of rules 1-4
+    invalidNames=`echo "$files" | grep -E "^\.[a-zA-z_-]|^\.{2}[a-zA-z_-]|[^a-zA-Z\._-]|^-|[a-zA-Z\._-]{14,}"`
+
+    #invalid filenames in violation of rule 5 (case insensitivity)
+    caseDuplicates=`echo "$files" | sort -f | uniq -iD`
+
+    #combines violators of rules 1-4 and 5, and then removes repeat offenders
+    for item in `{ echo "$invalidNames"; echo "$caseDuplicates"; } | sort -u`;
+    do
+	echo $DIR/$item
+    done
+}
+
+#recursive poorname search function
+recursivePN()
+{
+    local DIR=$1
+
+    #call non recursive poorname search on current directory 
+    nonRecursivePN $DIR
+    
+    #find all subdirs in current directory and call recursive poorname search on each subdir
+    for item in `find "$DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;`;
+    do
+	recursivePN  $DIR/$item
+    done
+}
+
+#if -r option was specified, calls recursive search. otherwise calls basic search
+if [ "$RECURSE" != "true" ]
+then
+    nonRecursivePN $DOMAIN
+else
+    recursivePN $DOMAIN
+fi
+
