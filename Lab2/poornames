@@ -31,7 +31,8 @@ fi
 files=`find "$DOMAIN" -mindepth 1 -maxdepth 1 -exec basename {} \;`
 
 #invalid filenames in violation of rules 1-4
-invalidNames=`echo "$files" | grep -E "^\.[a-zA-z_-]|^\.{2}[a-zA-z_-]|[^a-zA-Z\._-]|^-|[a-zA-Z\._-]{14,}"`
+invalidNames=`echo "$files" | grep -E "^\.[a-zA-z_-]|^\.{2}[a-zA-z_-]
+|[^a-zA-Z\._-]|^-|[a-zA-Z\._-]{14,}"`
 
 #invalid filenames in violation of rule 5 (case insensitivity)
 caseDuplicates=`echo "$files" | sort -f | uniq -iD`
