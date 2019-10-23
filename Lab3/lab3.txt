@@ -13,14 +13,14 @@ I downloaded and verified the coreutils tarball with the following commands:
   gpg --verify --keyring ./gnu-keyring.gpg coreutils-8.29.tar.xz.sig
 
 The last command output the following text to the terminal:
-    gpg: Signature made Wed 27 Dec 2017 10:29:05 AM PST using RSA key ID 306037D9
-    gpg: /u/eng/class/classmfk/.gnupg/trustdb.gpg: trustdb created
-    gpg: Good signature from "Pádraig Brady <P@draigBrady.com>"
-    gpg:                 aka "Pádraig Brady <pbrady@redhat.com>"
-    gpg:                 aka "Pádraig Brady <pixelbeat@gnu.org>"
-    gpg: WARNING: This key is not certified with a trusted signature!
-    gpg:          There is no indication that the signature belongs to the owner.
-    Primary key fingerprint: 6C37 DC12 121A 5006 BC1D  B804 DF6F D971 3060 37D9
+gpg: Signature made Wed 27 Dec 2017 10:29:05 AM PST using RSA key ID 306037D9
+gpg: /u/eng/class/classmfk/.gnupg/trustdb.gpg: trustdb created
+gpg: Good signature from "Pádraig Brady <P@draigBrady.com>"
+gpg:                 aka "Pádraig Brady <pbrady@redhat.com>"
+gpg:                 aka "Pádraig Brady <pixelbeat@gnu.org>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 6C37 DC12 121A 5006 BC1D  B804 DF6F D971 3060 37D9
 
 The warning message is displayed because there is no evidence that the signature
 belongs to the owner of the file.
@@ -90,20 +90,3 @@ patch was successful. I then ran the same command on the unmodified directory.
 
 On this one, the . and .. directories still appeared.
 --------------------------------------------------------------------------------
-
-Q1.
-In terms of speed, I don't think applying the patch would have a noticeable
-impact on performance. The main change within the patch is the switch statement.
-I can't picture a situation in which that change would result in slower
-performance. If anything, the patch would slightly increase execution time.
-
-Q2.
-The main difference in expected behavior resulting from this patch is that the
-order in which the options are selected for the ls command result in different
-behavior. The command ls -a -A now behaves as if the -A option overrides the
-previous -a option. Switching the order of the options, as such: ls -A -a now
-behaves differently, with the . and .. directories being outputted. Before the
-patch, the two commands would have had identical outputs. This change would be
-the main one that I would watch out for. 
-
-    
