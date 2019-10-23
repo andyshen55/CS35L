@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 """
 shuf.py - GNU shuf command, implemented in Python
@@ -106,8 +106,8 @@ Shuffles input by outputting a random permutation of its input lines."""
                         parser.error("Error: both file and inputRange provided")
                     inputList = inFile.readlines()
                     
-            except IOError as (errno, strerror):
-                parser.error("I/O error({0}): {1}".format(errno, strerror))
+            except IOError as errno:
+                parser.error("I/O error: {0}".format(errno))
 
         else:
             parser.error("wrong number of operands")
