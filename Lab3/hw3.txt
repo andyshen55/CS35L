@@ -18,3 +18,36 @@ previous -a option. Switching the order of the options, as such: ls -A -a now
 behaves differently, with the . and .. directories being outputted. Before the
 patch, the two commands would have had identical outputs. This change would be
 the main one that I would watch out for. 
+
+Q3.
+When randline.py is executed on an empty file, the following error occurs:
+Traceback (most recent call last):
+  File "randline.py", line 70, in <module>
+    main()
+  File "randline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+File "/usr/local/cs/Python-2.7.16/lib/python2.7/random.py", line 277, in choice
+ return seq[int(self.random() * len(seq))]  # raises IndexError if seq is empty
+IndexError: list index out of range
+
+As the comment points out, the reason this occurs is because seq[0] is accessed
+despite seq being empty. This causes an out of bound IndexError.
+
+Q4.
+When I use python3 instead of python as the interpreter for randline.py, the
+following error occurs:
+  File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+
+The reason this happens is because exceptions in Python2 were iterables. This
+was changed in Python3, such that the correct form would be:
+    except IOError as errno:
+
+Q5.
+Nothing out of the ordinary happens when I use the Python2 interpreter
+instead. The main change I made to my program to make it compatible with
+Python3 was the except as clause. 
