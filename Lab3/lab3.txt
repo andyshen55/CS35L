@@ -1,0 +1,97 @@
+Name: Thant Zin Oo
+UID: 705172144
+
+Lab 3 Report
+--------------------------------------------------------------------------------
+
+1.
+I downloaded and verified the coreutils tarball with the following commands:
+  wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz
+  wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz.sig
+  wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
+
+  gpg --verify --keyring ./gnu-keyring.gpg coreutils-8.29.tar.xz.sig
+
+The last command output the following text to the terminal:
+    gpg: Signature made Wed 27 Dec 2017 10:29:05 AM PST using RSA key ID 306037D9
+    gpg: /u/eng/class/classmfk/.gnupg/trustdb.gpg: trustdb created
+    gpg: Good signature from "Pádraig Brady <P@draigBrady.com>"
+    gpg:                 aka "Pádraig Brady <pbrady@redhat.com>"
+    gpg:                 aka "Pádraig Brady <pixelbeat@gnu.org>"
+    gpg: WARNING: This key is not certified with a trusted signature!
+    gpg:          There is no indication that the signature belongs to the owner.
+    Primary key fingerprint: 6C37 DC12 121A 5006 BC1D  B804 DF6F D971 3060 37D9
+
+The warning message is displayed because there is no evidence that the signature
+belongs to the owner of the file.
+
+After verifying the signature, I untarred coreutils-8.29.tar.xz:
+  tar -xvf coreutils-8.29.tar.xz
+    
+2.
+I made a directory named coreutilsInstall in my home directory:
+  mkdir ~/coreutilsInstall
+
+Which I then installed coreutils-8.29 in:
+      cd coreutils-8.29
+      cat INSTALL
+      ./configure --prefix=/w/home.28/class/classmfk/coreutilsInstall/ &&
+      make && make install
+
+I initially ran into a problem when I tried using a relative path for the pre-
+fix flag. Changing it to an absolute path resolved the issue for me.
+
+3.
+I reproduced the bug by using ./ls instead of just ls. The reason I had to
+preface the command with the ./ is that without it the path that ls looks in is
+by default /bin/ls.
+   cd ~/coreutilsInstall/bin
+   ./ls -a -A
+
+4.
+I found  the patch file and applied it using the following commands:
+  cd ~/Desktop/CS35L/Lab3/coreutils-8.29
+  wget "https://debbugs.gnu.org/cgi/bugreport.cgi?msg=10;filename=0001-ls-A-now
+  -overrides-a.patch;bug=30963;att=1" -O fixls.patch
+  man patch
+  patch -p1 < fixls.patch
+
+The following message was output to my terminal:
+  Hunk #1 FAILED at 4.
+  1 out of 1 hunk FAILED -- saving rejects to file NEWS.rej
+  patching file src/ls.c
+  Hunk #1 succeeded at 1900 (offset -3 lines).
+  patching file tests/local.mk
+  patching file tests/ls/a-option.sh 
+   
+However, upon inspection of the ls.c file, I found it to be changed as per the
+patch_file.
+
+5.
+I then typed the following commands (in the untarred directory):
+  make
+
+I received an error message stating that automake-1.15 was missing from my system.
+I asked a TA for guidance, and the following command resolved the issue:
+  autoreconf -fi
+
+The reason I had to run this command was that running the ./configure previously
+had changed my Makefile. Afterwards, I typed make again.
+
+6.
+To test if the patch worked, I tried recreating the bug with ls in the src dir:
+   cd src
+   ./ls -a -A
+
+The . and .. directories were not in the output of ls. I concluded that the patch
+was successful. I then ran the same command on the unmodified directory.
+    cd ~/coreutilsInstall/bin
+    ./ls -a -A
+
+On this one, the . and .. directories still appeared.
+--------------------------------------------------------------------------------
+
+Q1.
+
+
+    
