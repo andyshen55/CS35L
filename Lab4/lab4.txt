@@ -1,0 +1,281 @@
+Name: Thant Zin Oo
+UID: 705172144
+
+Lab 4 Report
+--------------------------------------------------------------------------------
+
+I started the lab by downloading and unzipping the buggy version of coreutils:
+  wget "https://web.cs.ucla.edu/classes/fall19/cs35L/assign/coreutils-with-
+  bug.tar.gz"
+  tar -xvf coreutils-with-bug.tar.gz
+
+I then installed it in my home directory to preserve a buggy copy that I could
+check against the patched version.
+      cd coreutils-with-bug/
+      mkdir ~/buggy-coreutils
+      ./configure --prefix=/w/home.28/class/classmfk/buggy-coreutils &&
+      make && make install
+
+I ran into an error when building as-is. Below is the chunk of output that
+told me what the specific error was:
+
+     In file included from utimecmp.c:41:
+utimens.h:2:5: error: conflicting types for 'futimens'
+    2 | int futimens (int, char const *, struct timespec const [2]);
+      |     ^~~~~~~~
+In file included from utimecmp.h:25,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of\
+'futimens' was here
+  373 | extern int futimens (int __fd, const struct timespec __times[2])\
+  __THROW;
+      |            ^~~~~~~~
+make[3]: *** [Makefile:659: utimecmp.o] Error 1
+make[3]: Leaving directory '/w/home.28/class/classmfk/Desktop/CS35L/Labs/4\
+/coreutils-with-bug/lib'
+make[2]: *** [Makefile:414: all] Error 2
+make[2]: Leaving directory '/w/home.28/class/classmfk/Desktop/CS35L/Labs/4\
+/coreutils-with-bug/lib'
+make[1]: *** [Makefile:419: all-recursive] Error 1
+make[1]: Leaving directory '/w/home.28/class/classmfk/Desktop/CS35L/Labs/4\
+/coreutils-with-bug'
+make: *** [Makefile:357: all] Error 2
+
+Based on the error report, I concluded that it was a compilation error caused
+by two separate declarations of the futimens function, with two conflicting
+types. To ammend this, I applied the prescribed patch file.
+    wget "https://web.cs.ucla.edu/classes/fall19/cs35L/assign/coreutils.diff"
+    patch -p0 < coreutils.diff
+
+Applying the patch output the following to the screen:
+	 patching file lib/utimens.c
+	 patching file lib/utimens.h
+	 patching file src/copy.c
+	 patching file src/tee.c
+	 patching file src/touch.c
+
+The renaming patch fixed the error by renaming (as described by the name)
+every instance of futimens with coreutils_futimens and tee with
+coreutils_tee. This absolved the multiple declaration compilation error.
+I then used the following commands to recompile and install:
+    make
+    make install
+
+
+
+In order to reproduce the problem, I went into the buggy version of coreutils
+on my home directory, and typed in the example commands, specifying the buggy
+implementation of ls in the TZ-prefaced command:
+   cd ~/buggy-coreutils/bin
+   tmp=$(mktemp -d)
+   cd $tmp
+   touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L
+   touch now
+   sleep 1
+   touch now1
+   TZ=UTC0 ~/buggy-coreutils/bin/ls -lt --full-time wwi-armistice-cs35L now now1
+
+Which created the same buggy output:
+-rw-r--r-- 1 classmfk class 0 1918-11-11 11:00:00.000000000 +0000 wwi-\
+armistice-cs35L
+-rw-r--r-- 1 classmfk class 0 2019-10-28 02:52:51.575149298 +0000 now1
+-rw-r--r-- 1 classmfk class 0 2019-10-28 02:52:45.565964689 +0000 now
+
+
+
+I used GDB to track down the source of the bug:
+  cd $tmp
+  gdb ~/buggy-coreutils/bin/ls
+  info functions
+
+I looked at the functions defined in ls.c as a starting point for the source of
+the bug:
+    File ls.c:
+1113:   int main(int, char **);
+4093:   void usage(int);
+4043:   static size_t calculate_columns(_Bool);
+2461:   static void clear_files(void);
+2897:   static int compare_atime(V, V);
+2871:   static int compare_ctime(V, V);
+2945:   static int compare_extension(V, V);
+2884:   static int compare_mtime(V, V);
+2928:   static int compare_name(V, V);
+2909:   static int compare_size(V, V);
+2919:   static int compare_version(V, V);
+2898:   static int compstr_atime(V, V);
+2872:   static int compstr_ctime(V, V);
+2946:   static int compstr_extension(V, V);
+2885:   static int compstr_mtime(V, V);
+2929:   static int compstr_name(V, V);
+2910:   static int compstr_size(V, V);
+972:    static _Bool dev_ino_compare(const void *, const void *);
+980:    static void dev_ino_free(void *);
+--Type <RET> for more, q to quit, c to continue without paging--
+965:    static size_t dev_ino_hash(const void *, size_t);
+946:    static void dired_dump_obstack(const char *, struct obstack *);
+2787:   static void extract_dirs_from_files(const char *, _Bool);
+2244:   static void file_failure(_Bool, const char *, const char *);
+3180:   static void format_user(uid_t, int);
+3152:   static void format_user_or_group(const char *, unsigned long, int);
+3214:   static int format_user_width(uid_t);
+1906:   static _Bool get_funky_string(char **, const char **, _Bool, size_t *);
+2491:   static uintmax_t gobble_file(const char *, enum filetype, _Bool,
+const char *);
+3930:   static void indent(size_t, size_t);
+1029:   static _Bool is_colored(enum indicator_no);
+3781:   static size_t length_of_file_name_and_frills(const struct fileinfo *);
+3623:   static void prep_non_filename_text(void);
+3040:   static void print_current_files(void);
+3640:   static void print_file_name_and_frills(const struct fileinfo *);
+3231:   static void print_long_format(const struct fileinfo *);
+3601:   static void print_name_with_quoting(const char *, mode_t, int,
+struct obstack *);
+3660:   static void print_type_indicator(mode_t);
+3769:   static void put_indicator(const struct bin_str *, const struct bin_str *);
+2261:   static void queue_directory(const char *, const char *, _Bool);
+3436:   static size_t quote_name(FILE *, const char *, const struct
+quoting_options *, size_t *);
+1039:   static void restore_default_color(void);
+2899:   static int rev_cmp_atime(V, V);
+2873:   static int rev_cmp_ctime(V, V);
+2947:   static int rev_cmp_extension(V, V);
+2886:   static int rev_cmp_mtime(V, V);
+2930:   static int rev_cmp_name(V, V);
+2911:   static int rev_cmp_size(V, V);
+2920:   static int rev_cmp_version(V, V);
+2900:   static int rev_str_atime(V, V);
+2874:   static int rev_str_ctime(V, V);
+2948:   static int rev_str_extension(V, V);
+2887:   static int rev_str_mtime(V, V);
+2931:   static int rev_str_name(V, V);
+2912:   static int rev_str_size(V, V);
+1048:   static void sighandler(int);
+2953:   static void sort_files(void);
+1059:   static void stophandler(int);
+2844:   static int xstrcoll(const char *, const char *);
+
+Of the functions defined in ls.c, I narrowed possible sources of the bug down
+to the compare_time functions, as a faulty time comparison could very easily
+be causing the error. I set breakpoints at each function:
+    b compare_atime
+    b compare_ctime
+    b compare_mtime
+    run -lt
+
+The first breakpoint I hit was an invocation of the function compare_mtime.
+I carefully stepped through it incrementally, until I reached another function
+call:
+    x/24w $pc
+    s
+
+I found that compare_mtime invoked the function cmp_mtime via the s command:
+    s
+    
+I then found that cmp_mtime then calls timespec_cmp, which I examined:
+    list
+
+43      /* Return negative, zero, positive if A < B, A == B, A > B,
+respectively.
+44         Assume the nanosecond components are in range, or close to it.
+*/
+45      static inline int
+46      timespec_cmp (struct timespec a, struct timespec b)
+47      {
+48        int diff = a.tv_sec - b.tv_sec;
+49        return diff ? diff : a.tv_nsec - b.tv_nsec;
+50      }
+51
+52      # if ! HAVE_DECL_NANOSLEEP
+
+The function returns the time difference (in seconds) by subtracting the
+two numbers. From this, I guessed that the bug could be caused by overflow
+errors caused from subtracting large numbers (as the number of seconds
+between 1918 and 2019 is a massive number) To affirm my suspicions, I set
+a watchpoint on the variable diff, as well as examined its current value:
+  info local
+diff = 1108893288
+  watch diff
+  c
+
+Unfortunately, the watch point was deleted when the program left the function
+block. Instead, I just pressed c repeatedly and manually checked diff.
+   c
+   s
+   info local
+   (repeated as some resulted in diff = <optimized out>)
+
+I got the following other value for diff:
+  diff = -7
+
+From this, I concluded that the bug was in fact from subtraction overflows.
+
+
+
+
+In order to fix the bug, I had to also maintain a patch file that would record
+any changes I made to the original source files. To do so, I duplicated the
+existing file containing timespec_cmp, in the hopes that I could run diff later
+to directly generate a patch file.
+   cp /coreutils-with-bug/lib/timespec.h fixed-timespec.h
+   emacs fixed-timespec.h
+
+Inside my copied version of timespec_cmp, I ammended the function to return
+either -1, 0 or 1 based on the boolean result of <, >, and =, instead of
+returning the difference itself. This way, the risk of overflow is mitigated.
+This was my ammeded version:
+
+static inline int
+timespec_cmp (struct timespec a, struct timespec b)
+{
+  if (a.tv_sec < b.tv_sec)
+    return -1;
+  else if (a.tv_sec > b.tv_sec)
+    return 1;
+  return 0;
+}
+  
+Afterward, I used the output of the diff command to create a patch file,
+whose changelog I then modified. 
+      diff -u lib/timespec.h fixed-timespec.h > lab4.diff
+      emacs lab4.diff
+      C-x 4 a
+
+I then added the following changelog message:
+-
+2019-10-28  Thant Zin Oo  <classmfk@lnxsrv07.seas.ucla.edu>
+
+        * fixed-timespec.h (timespec_cmp):
+        Normalized return values to be -1, 0, or 1, depending
+        on direct comparison operators (<, >, ==). Fixes overflow
+        problems with timestamps very far in the past.
+
+To create the ChangeLog entry followed by a diff -u patch, as per the spec,
+I used the following command:
+  cat lab4.diff >> ChangeLog
+  mv ChangeLog lab4.diff
+
+
+
+To test this bug on the SEASNET machines, I ran the following commands:
+   cd
+   touch -d '1918-11-11 11:00 GMT' wwi-armistice-cs35L
+   touch now
+   sleep 1
+   touch now1
+   TZ=UTC0 ls -lt --full-time wwi-armistice-cs35L now now1
+
+Which output the following:
+-rw-r--r-- 1 classmfk class 0 2054-12-17 17:28:16.000000000 +0000
+wwi-armistice-cs35L
+-rw-r--r-- 1 classmfk class 0 2019-10-29 06:28:33.968462000 +0000 now1
+-rw-r--r-- 1 classmfk class 0 2019-10-29 06:28:27.887428000 +0000 now
+
+To my surprise, the SEASNET implementation also had a bug, except this
+time, it treated the old timestamp as a future timestamp. After consulting
+a TA, I learned that the cause of the bug is based on the Unix interpretation
+of time- as the number of elapsed seconds since Jan. 1, 1970.
+
+Because our SEASNET servers use unsigned 32-bit ints to store Unix time,
+negative times wrap around and result in the future time output shown.
+
+--------------------------------------------------------------------------------
