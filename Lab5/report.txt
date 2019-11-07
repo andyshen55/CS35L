@@ -72,7 +72,9 @@ From inspection, we can see that tr2b made exponentially fewer system
 calls than tr2u did. I'm not sure why tr2b only made 613 read calls,
 when tr2u made 5000003. Based on my implementation of tr2b, and the
 assumption that every getchar() call invokes a read() call, I would have
-expected tr2b to also have around 5000000 reads.
+expected tr2b to also have around 5000000 reads. If I were to guess the
+reason behind the small number of read and write calls, I would say that
+the implementation of stdlib optimizes away unnecessary system calls. 
 
 To compare system calls when copying a file to the terminal, I used the
 previous commands, with the last output redirection omitted:
@@ -139,4 +141,142 @@ sys 0m8.906s
 This confirms that the unbuffered version takes much longer than the buffered
 version on the same input data. This is obvious from the massive difference in
 the number of system calls.
+
+--------------------------------------------------------------------------------
+
+Performance analysis of sfrob/sfrobu:
+
+To analyze the performance of sfrob and sfrobu, I used the time command with the
+5MB file I created earlier in the lab:
+    time ./sfrob < testFile.txt > out.txt
+    time ./sfrobu < testFile.txt > out.txt
+    time ./sfrobu -f < testFile.txt > out.txt
+
+sfrob:
+real    0m0.350s
+user    0m0.287s
+sys 0m0.008s
+
+sfrobu:
+real    0m12.613s
+user    0m3.493s
+sys 0m9.075s
+
+sfrobu -f:
+real    0m12.724s
+user    0m3.410s
+sys 0m9.268s
+
+As can be seen from the time outputs, the unbuffered version runs much slower
+than the buffered version.
+
+I then checked the performance of sfrob and sfrobu on input files of length:
+(0, 100, 10000, and 1000000) lines. To create the files I used the wc command
+to count the line length of the testFile I had already created, and then changed
+the bytes field to get the desired number of lines:
+
+    wc -l testFile.txt
+       output: 19662
+
+    head --bytes=270000000 /dev/urandom | wc -l
+       	 output: 1056019
+    head --bytes=270000000 /dev/urandom > millLine.txt
+
+    head --bytes=2700000 /dev/urandom | wc -l
+    	 output: 10406
+    head --bytes=2700000 /dev/urandom > tenKLine.txt
+
+    head --bytes=27000 /dev/urandom | wc -l
+    	 output: 112
+    head --bytes=27000 /dev/urandom > hundLine.txt
+
+    touch zeroLine.txt
+
+I then ran time commands on the newly created files to attempt to model the time
+complexity of sfrobu:
+
+    time ./sfrobu < zeroLine.txt > out.txt
+    time ./sfrobu < hundLine.txt > out.txt
+    time ./sfrobu < tenKLine.txt > out.txt
+    time ./sfrobu < millLine.txt > out.txt
+
+I decided to focus on the real component of the time commands' output  when
+modeling the time complexity of sfrobu:
+
+num lines | time (minutes.seconds)
+---------------------------------
+0	  |		 0m0.009s
+100	  |	    	 0m0.075s
+10000	  |		 0m5.597s
+1000000	  |	      11m.27.604s
+
+Given the time complexity of qsort, nlog(n), I assumed that the CPU time cost
+function would be of the form: C(n) = K * n * log(n)
+I tested this guess on the number of seconds sfrobu took for millLines, by
+soliving for K.
+(11 * 60 + 27.604) / (1000000 * log(1000000)) = K
+K = 0.0000345
+
+I then checked if this held for tenKLines and hundLines.
+0.0000345 * 10000 * log(10000) = 4.584 -> 5.597
+0.0000345 * 100 * log(100) = 0.023 -> 0.075
+
+Although the result wasn't exactly what was measured by the time command, I
+attributed the difference in seconds to be based on significant figure error,
+considering the scale of the numbers I was multiplying and dividing by. However,
+the form n * log(n) gave me results consistent with the significant figures I
+was measuring. In general, I would model the CPU cost as a function of n lines:
+C(n) = K * n * log(n).
+
+To determine the system calls that sfrobu uses to allocate memory, I used the
+following strace commands:
+    strace -c ./sfrobu < hundLine.txt > outputS.txt
+    strace -c ./sfrobu < tenKLine.txt > outputS.txt
+
+hundLine.txt:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.03    0.254198           9     27001           write
+ 42.89    0.191164           7     27002           read
+  0.03    0.000121          15         8           brk
+  0.02    0.000080          11         7           mmap
+  0.01    0.000057          14         4           mprotect
+  0.01    0.000029          15         2           open
+  0.01    0.000029          10         3           fstat
+  0.01    0.000023          23         1           munmap
+  0.00    0.000015           8         2           close
+  0.00    0.000014          14         1           execve
+  0.00    0.000013          13         1         1 access
+  0.00    0.000007           7         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.445750                 54033         1 total
+
+tenKLine.txt:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 58.04   15.047635           6   2699956           write
+ 41.96   10.879799           4   2700003           read
+  0.00    0.000516         172         3           munmap
+  0.00    0.000068           9         8           brk
+  0.00    0.000044          11         4           mprotect
+  0.00    0.000033           4         9           mmap
+  0.00    0.000014           4         4           fstat
+  0.00    0.000008           8         1           arch_prctl
+  0.00    0.000007           2         3           close
+  0.00    0.000000           0         3           open
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00   25.928124               5399996         1 total
+
+From inspection, I observed that mmap and munmap were the two system calls that
+increased in number when the number of lines increased from 100 to 10000. From
+this observation, I deduced that they were the two system calls sfrobu used to
+(re)allocate memory. After this realization, I used the command man mmap to find
+the arguments with which these system calls would be called with.
+
+void *mmap(void *addr, size_t length, int prot, int flags,
+                  int fd, off_t offset);
+int munmap(void *addr, size_t length);
+
 --------------------------------------------------------------------------------
