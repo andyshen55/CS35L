@@ -58,11 +58,13 @@ void tr2b(const char* from, const char* to)
   char toChar;
 
   //until end of file is reached
-  while (!feof(stdin))
+  while (1)
     {
       fromChar = getchar();
       IOErr(stdin);
-
+      if (feof(stdin))
+	break;
+      
       //find transposed character (ie. if char is in from str)
       toChar = transpose(from, to, fromChar);
       putchar(toChar);
