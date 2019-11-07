@@ -1,0 +1,142 @@
+Name: Thant Zin Oo
+UID: 705172144
+
+Lab 5 Report
+--------------------------------------------------------------------------------
+
+1. Implementing tr2b.c was relatively straightforward. I copied the functions I
+used for IO error handling in sfrob to a new .c file. I wrote a trivial function
+to check for duplicate letters in the from string, that ran in O(n^2) time. The
+basic approach was to examine letter by letter, and for each letter look at all
+the following letters for a match. I contemplated using a hash map for O(n)
+efficiency, but decided against it because I didn't want to implement a hash
+function and map structure for such a trivial problem. By similar reasoning, I
+decided to use a less optimal solution to find the character to transpose to,
+by iterating through the from string for potential letter matches rather than
+maintaining a hash map of all letters to transpose. The tr2b function was also
+pretty simple to implement. I used feof(stdin) to check for EOF and used my
+transpose function to write to stdout with putchar(). 
+
+2. The implementation of tr2u.c was slightly trickier. I copied my code for
+tr2b.c into a new .c file. I removed my IOErr function as we weren't allowed
+to use getchar and putchar I/O methods. Instead of maintaining two variables
+for the result of getchar() and the argument of putchar(), I used a char buffer
+and a ssize_t variable for the return value of read() and write(). I looked up
+the documentation of read() and write() to diagnose error conditions and how
+to call the functions. 
+
+3. I created a file that contained at least 5,000,000 bytes with the command:
+   head --bytes=5000001 /dev/urandom > testFile.txt
+
+To compare system calls with strace when copying files, I used the commands:
+   strace -c ./tr2b 'h' 't' < testFile.txt > tr2b_out
+   strace -c ./tr2u 'h' 't' < testFile.txt > tr2u_out
+
+tr2b:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 66.46    0.000529           1       611           write
+ 15.58    0.000124           0       613           read
+  5.28    0.000042          11         4           mprotect
+  4.77    0.000038           4         9           mmap
+  3.14    0.000025          25         1           munmap
+  3.02    0.000024           6         4           fstat
+  0.88    0.000007           4         2           close
+  0.88    0.000007           7         1           arch_prctl
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000796                  1250         1 total
+
+tr2u:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.72   27.279145           5   5000001           write
+ 45.27   22.568516           5   5000003           read
+  0.00    0.000067          10         7           mmap
+  0.00    0.000063          16         4           mprotect
+  0.00    0.000037          37         1           munmap
+  0.00    0.000016           8         2           open
+  0.00    0.000008           8         1           arch_prctl
+  0.00    0.000007           4         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00   49.847866              10000026         1 total
+
+From inspection, we can see that tr2b made exponentially fewer system
+calls than tr2u did. I'm not sure why tr2b only made 613 read calls,
+when tr2u made 5000003. Based on my implementation of tr2b, and the
+assumption that every getchar() call invokes a read() call, I would have
+expected tr2b to also have around 5000000 reads.
+
+To compare system calls when copying a file to the terminal, I used the
+previous commands, with the last output redirection omitted:
+    strace -c ./tr2b 'h' 't' < testFile.txt
+    strace -c ./tr2u 'h' 't' < testFile.txt
+
+tr2b:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 97.68    0.129644           6     20026           write
+  2.32    0.003079           5       613           read
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0         9           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.132723                 20665         1 total
+
+tr2u:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 54.72   27.279145           5   5000001           write
+ 45.27   22.568516           5   5000003           read
+  0.00    0.000067          10         7           mmap
+  0.00    0.000063          16         4           mprotect
+  0.00    0.000037          37         1           munmap
+  0.00    0.000016           8         2           open
+  0.00    0.000008           8         1           arch_prctl
+  0.00    0.000007           4         2           close
+  0.00    0.000007           4         2           fstat
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00   49.847866              10000026         1 total
+
+We can observe that the unbuffered version again makes far more system
+calls than the buffered version. We can also see that the tr2b makes far more
+write calls when outputting to the terminal screen as compared to copying
+to a new file.
+
+4. To test the time performance of both versions, I used the time command:
+   time ./tr2b 'abc' 'def' < testFile.txt > tr2b_time
+   time ./tr2u 'abc' 'def' < testFile.txt > tr2u_time
+
+Which had the following outputs:
+
+tr2b:
+real 0m0.402s
+user 0m0.349s
+sys 0m0.010s
+
+tr2u:
+real 0m12.336s
+user 0m3.384s
+sys 0m8.906s
+
+This confirms that the unbuffered version takes much longer than the buffered
+version on the same input data. This is obvious from the massive difference in
+the number of system calls.
+--------------------------------------------------------------------------------
