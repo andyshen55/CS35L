@@ -302,7 +302,7 @@ In terms of error messages, I wasn't sure if the ldd output for pnmquantall
 (not a dynamic executable) was an error.  Upon closer examination of the program,
 I found that it was a Perl script, which isn't compiled with gcc to begin with.
 
-6.
+7.
 To obtain a sorted list of all the dynamic libraries used in my list, I wrote a shell
 script to invoke ldd on each command in my unique list.
 
