@@ -1,0 +1,90 @@
+Name: Thant Zin Oo
+UID: 705172144
+
+Lab 7 HW
+--------------------------------------------------------------------------------
+
+1. I created this file with the touch command, and maintained it with emacs.
+
+2. In an unpatched version of diffutils, I  created a new branch called quote
+with the following command.
+   git checkout v3.0 -b quote
+
+3. I applied my patch to v3.0 with the patch command.
+   patch -p1 < ~/Desktop/CS35L/test/quote-3.0-patch.txt
+
+The following output led me to believe that the patch was applied successfully.
+
+Output:
+patching file src/cmp.c
+patching file src/context.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+
+4. I learned how to use the add-change-log-entry-other-window command by reading
+the prescribed documentation.
+
+5. I updated the changelog entry in quote-3.0-patch.txt with the previous command.
+
+   emacs quote-3.0-patch.txt
+   C-x 4 a
+
+2019-11-20  Thant Zin Oo  <classmfk@lnxsrv07.seas.ucla.edu>
+
+        * quote-3.0-patch.txt:
+        This patch was created in response to a change in customer requirements
+        restricting the use of left and right single quotation marks, such that
+        quotes should be "'like this' or "like this", not `like this'". The patch
+        only alters occurences of the left quotation mark in constant character
+        strings, per the customer's request for low overhead. This means that any
+        updates to commentary and documentation present in the maint: quote like
+        this patch that this is derived from, are not present in this patch.
+
+6. To commit my changes to my working branch, I used the following commands.
+   git clean -f
+   git add *
+   git commit -F ../ChangeLog
+
+7. I then used the prescribed command to generate a patch file.
+   git format-patch -1 --stdout > ../formatted-patch.txt
+
+8. To verify that my partner's patch worked I checked out a new branch named
+partner, applied the patch with git am and then built diffutils with the same
+set of steps that I had taken in the lab. Again, make check resulted in some
+errors, but I verified that the diff program in the src directory worked as
+expected.
+	git checkout v3.0 -b partner
+	git am < formatted-patch.txt
+	./bootstrap
+	wget https://web.cs.ucla.edu/classes/fall19/cs35L/assign/diffutils-gets.diff
+	patch -p1 < diffutils-gets.diff
+	File to patch: lib/stdio.in.h
+	./configure
+	make
+	make check
+	src/diff . -
+	src/diff --help
+
+9. To check if my ChangeLog worked, I ran the command make distdir. I then inspected
+the ChangeLog file in the directory it created. As expected, my changelog entry
+was present.
+
+    make distdir
+    cd diffutils-3.0.1-d7b86/
+    cat ChangeLog | head
+
+10. I first tried running gitk without the -X flag enabled in my ssh. After consulting
+my TA's slides, I decided to ask a friend to borrow their Macbook with XQuartz enabled
+to ssh -X into my SEASnet account. Once I was in, I cd-ed into the directory and ran gitk.
+
+I scrolled through the commit history until I found the latest commit not newer than
+2015/01/25. The merge message said "Merge branch 'master' into xwidget", and the commit
+was made by Joakim Verona.
+
+My view of the mergepoint was that the features independently implemented by Paul Eggert,
+Lars Ingebrigsten, and Stefan Monnier rooted at the last merge on 2015/01/24 were merged
+into the master branch. The subwindows present in XQuartz show changes from  pre and post
+merging, comments, and a diagram of the branch history. 
