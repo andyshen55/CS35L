@@ -1,0 +1,66 @@
+Thant Zin Oo
+705172144
+
+Lab 8 Report
+-------------------------------------------------------------------------------------------------------------
+
+To setup my BeagleBone, I followed the steps outlined in the Piazza post on Setup Instructions. I first
+plugged it into my computer via a micro-usb cable. I then waited for the drive to appear on my computer, after
+which I opened START.htm. At this point, I realized there was an issue with my BeagleBone detecting completed
+steps. None of the steps in START.htm were highlighted green despite having completed them. I ignored this
+and tried downloading drivers but found that installing them was a pain on Windows 10. To circumvent having to
+turn off Secure Boot to install the drivers, I decided to just update my BeagleBone with Tyler's SD card. After
+updating, I found that the steps were properly highlighted in START.htm. I then ssh-ed into my BeagleBone with
+the user profile debian/temppwd. The rest of the setup went as expected. I used connmanctl to connect to the
+wifi in the lab, then ran the following commands:
+     sudo apt-get update
+     sudo apt-get install xauth
+     sudo apt-get install xvfb
+     sudo apt-get install firefox-esr-110n-en-gb
+
+I then checked to make sure X11 forwarding was enabled, by changing /etc/ssh/ssh_config and /etc/ssh/sshd_config
+to enable X11Forwarding. I also checked to make sure that ~/.ssh/config contained ForwardAgent yes and ForwardX11
+yes.
+
+I got the IP address of my BeagleBone, 10.97.85.125, by running ifconfig and looking under wlan0. My partner
+found hers, 10.97.85.126, in the same fashion.
+
+After setting up my BeagleBone, I started the lab by generating public and private keys.
+      ssh-keygen
+
+I saved the keys to the default location: ~/.ssh/is_rsa, and then created a user account for my partner on my
+local system, with the commands:
+      sudo useradd -d /home/vaish -m vaishnavi2
+      sudo passwd vaishnavi2
+      (pineapple)
+
+I then created a .ssh directory for my partner.
+       cd /home/vaish
+       sudo mkdir .ssh
+       sudo chown -R vaishnavi2 .ssh
+       sudo chmod 700 .ssh
+
+My partner followed the same set of instructions to make a user profile on her BeagleBone. With her IP address,
+I ran the following commands to be able to ssh into her server with key-based authentication.
+      ssh-keygen (saved to different location: ~/.ssh/authorized_keys)
+      ssh-copy-id -i andy@10.97.85.126
+
+I then added the private key to the authentication agent with:
+       eval $(ssh-agent -s)
+       ssh-add
+
+I then ssh-ed into my partners BeagleBone. Instead of being prompted for the password she had created for me,
+I was able to gain access with my password for the key-pair I had just generated.
+      ssh andy@10.97.85.126
+
+To test if port forwarding was enabled, I typed exit to drop the current ssh session. I then ran the following
+commands after running XMing.
+	 ssh -X andy@10.97.85.126
+	 xeyes
+
+I confirmed that the GUI was displayed on my host system, thus verifying that X11 forwarding was properly enabled.
+
+-------------------------------------------------------------------------------------------------------------
+Partner Name/UID:
+Vaishnavi Tipireddy
+705143552
