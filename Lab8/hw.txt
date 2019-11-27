@@ -1,0 +1,28 @@
+Thant Zin Oo
+705172144
+
+Lab 8 HW
+-------------------------------------------------------------------------------------------------------------
+
+1. If other teams really had been observing all the bytes being transmitted across the network, the resulting
+network would still be secure. This is because the ssh protocol is encrypted from end to end. 
+
+(1) Assuming the other teams had installed keyloggers on our systems after the client-server setup, our network
+would still have been secure. That was the point of installing key-based authentication, as if we just had to
+type in our passwords, other teams could have simply extracted our user passwords. 
+
+(2) If we were booting off a USB, and other teams gained access to our bootable drive, then they would have
+access to our network, assuming they also had the keylogger to keep track of our passwords to the key-pair.
+This is because they would have access to our .ssh directories holding our private keys. With that, along with
+the passwords associated with our key pair, other teams could gain access.
+
+2. The gpg --verify command doesn't really verify that I personally created the file, because it only checks
+to see if the given detached signature matches with the file. A warning is even issued saying:
+
+   gpg: Good signature from "thantzinoo (created keypair for hw) <andyshen55@ucla.edu>"
+   gpg: WARNING: This key is not certified with a trusted signature!
+   gpg:          There is no indication that the signature belongs to the owner.
+
+If I had to fix this problem, I would propose an oversight system in which signing files would upload credentials
+to a decentralized database of users, to ensure that the person sending the file also signed the file. This could
+be a second layer of security, but the downside would be the difficulty of creating such a system to begin with.
