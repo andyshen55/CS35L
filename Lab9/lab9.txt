@@ -1,0 +1,148 @@
+Thant Zin Oo
+705172144
+
+Lab 9 Report
+-------------------------------------------------------------------------------------------------------------
+
+1. I calculated the disk space of the working directory (without the .git folder) with the commands:
+   cd ~eggert/src/gnu/emacs-CS-35L
+   git count-objects -v -H | grep 'size-pack'
+
+To find the size of the git repository, I used the command:
+   cd .git/
+   du -sh
+
+Size of working directory: 333.34 MiB
+Size of Git repository: 350 MiB
+
+To find the largest file(s) in the Git repository, I ran the following command:
+   du -h | sort
+
+Output:   
+100K    ./logs/refs/heads/old-branches
+12K     ./logs/refs/heads/scratch/ns
+12K     ./refs/remotes/origin/scratch
+16K     ./logs/refs/heads/scratch/tzz
+20K     ./refs/heads/scratch
+20K     ./refs/remotes/origin
+24K     ./logs/refs/remotes/origin/feature
+24K     ./refs/remotes
+312K    ./logs/refs/heads/scratch
+335M    ./objects/pack
+342M    ./objects
+350M    .
+4.0K    ./branches
+40K     ./logs/refs/remotes/origin/scratch
+4.0K    ./refs/heads/feature
+4.0K    ./refs/heads/features
+4.0K    ./refs/heads/fix
+4.0K    ./refs/heads/heads
+4.0K    ./refs/heads/old-branches
+4.0K    ./refs/heads/other-branches
+4.0K    ./refs/heads/scratch/joaot
+4.0K    ./refs/heads/scratch/np
+4.0K    ./refs/heads/scratch/ns
+4.0K    ./refs/heads/scratch/tzz
+4.0K    ./refs/remotes/origin/feature
+4.0K    ./refs/remotes/origin/scratch/joaot
+4.0K    ./refs/remotes/origin/scratch/ns
+4.0K    ./refs/tags
+48K     ./refs/heads
+56K     ./info
+56K     ./logs/refs/heads/fix
+72K     ./hooks
+756K    ./logs/refs/heads
+76K     ./logs/refs/remotes/origin
+7.8M    ./objects/info
+8.0K    ./logs/refs/heads/features
+8.0K    ./logs/refs/heads/heads
+80K     ./logs/refs/heads/other-branches
+8.0K    ./logs/refs/heads/scratch/joaot
+8.0K    ./logs/refs/heads/scratch/np
+80K     ./logs/refs/remotes
+8.0K    ./logs/refs/remotes/origin/scratch/joaot
+8.0K    ./logs/refs/remotes/origin/scratch/ns
+80K     ./refs
+840K    ./logs/refs
+848K    ./logs
+96K     ./logs/refs/heads/feature
+
+From inspection, I determined that the file ./objects/pack was the largest file in the repository.
+
+2. To count the number of local and remote branches, I ran the following commands:
+   git branch | wc -l
+   git branch -r | wc -l
+
+Output:
+176
+177
+
+To verify that these were the correct number of local/remote branches, I ran the command:
+   git branch -a | wc -l
+
+Output:
+353
+
+This was in line with my results, as the -a argument shows both local and remote branches, which aligns
+with my previous findings.
+
+Local branches: 176
+Remote branches: 177
+
+3. To find the number of repositories remote to ~eggert/src/gnu/emacs-CS-35L, I used the command:
+   git remote -v
+
+Output:
+origin  https://git.savannah.gnu.org/git/emacs.git (fetch)
+origin  https://git.savannah.gnu.org/git/emacs.git (push)
+
+From inspection, I determined that there was one remote repository, located at
+https://git.savannah.gnu.org/git/emacs.git
+
+4. I found the ten local branches most recently commited to with the command:
+   git branch --sort=-committerdate | head -n 10
+
+Output:
+* master
+  scratch/joaot/make-completion-at-point-function
+  feature/windows-with-utils
+  scratch/completion-api
+  scratch/a-modest-completion-redesign-proposal
+  scratch/fido-mode
+  feature/gnus-select2
+  feature/extend_face_id
+  scratch/jit-lock-antiblink-cleaned-up
+  emacs-26
+
+5. To find the number of commits in the master branch, I ran the following command:
+   git rev-list --count master
+
+Output:
+139583
+
+6. To find the percentage of commits that are in the master branch, out of all commits across all branches,
+I first found the number of commits across all branches with the command:
+  git rev-list --all --count
+
+Output:
+143910
+
+I then calculated the percentage with a calculator, by plugging in 139583 / 143910. The resulting percentage
+was 0.9699 or 97%.
+
+7. I found the ten people with the most master-branch commits since 2013 with the command:
+   git shortlog -sn --since="2013" | head -n 10
+
+Output:
+  3230  Eli Zaretskii
+  3174  Paul Eggert
+  2602  Glenn Morris
+  1806  Lars Ingebrigtsen
+  1389  Michael Albinus
+  1367  Stefan Monnier
+   576  Noam Postavsky
+   516  Dmitry Gutov
+   438  Alan Mackenzie
+   412  Juri Linkov
+
+8.
