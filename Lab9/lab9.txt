@@ -145,4 +145,35 @@ Output:
    438  Alan Mackenzie
    412  Juri Linkov
 
-8.
+8. I reloaded Putty with X11 forwarding enabled and ran gitk inside ~eggert/src/gnu/emacs-CS-35L. I then manually
+searched the commits and stitched together a diagram of the commit relationships.
+
+Commit Index:
+0: 4ea37c2b8b0c5a68fde59770c3536195e0972217
+1: 977cd6cb28a37744966ec62f70cf62659f6f302a
+2: 625cee531623feddbe3174fad52c7db96ec60bb3
+3: 5490ccc5ebf39759dfd084bbd31f464701a3e775
+4: 0c06b93c1e467debd401eb0b3be4652fde14fa95
+5: 820739bbb572b30b6ce45756c9960e48dca859af
+6: 00e4e3e9d273a193620c3a4bb4914e555cb8e343
+7: 49cd561dc62ea6b3fbedab7aef0f020733f4cf09
+8: abcb2e62dae6aa26308f7ac9efc89247f89cbe65
+9: 98ac36efe4ce4bd3a0bca76fc73ce6c7abaa4371
+
+(0)     (1)	     (4)		        (8)     (9)
+ O-------O-----------O------------ ... ----------O-------O- ...
+  \		    /			        /       /	
+   \  		   O- ... -O (5)	       /       /
+    \		  /   	    \		      /	      /
+     \---O- ... -O	     \	             /	     /
+  	(2)	(3)	      O	(6)  	    /       /
+			       \	   /	   /
+			        \	  /       /
+				 O- ... -O- ... -O
+				        (7)
+
+(Unlabelled vertices are just intermediary commits that stitch together the commits above)
+In terms of what likely happened to cause this commit-graph neighborhood, from the starting commit hash (0),
+development branched off from the master branch (top horizontal) and the secondary feature branch. There was
+a merge commit combining the two branches, signified by (4). Development continued on a separate branch,
+encompassing commits (5-7). These features were then merged back into master for commit (9), and later (10).
